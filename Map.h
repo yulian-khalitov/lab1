@@ -55,8 +55,8 @@ void Map<T_key, T_val>::left_rotate(Node* node)
 	node->p = node_right;
 }
 
-template <class T_kenode_left, class T_val>
-void Map<T_kenode_left, T_val>::right_rotate(Node * node)
+template <class T_key, class T_val>
+void Map<T_key, T_val>::right_rotate(Node * node)
 {
 	Node* node_left = node->left;
 	node->left = node_left->right;
@@ -151,8 +151,8 @@ auto Map<T_key, T_val>::minimum(Node* node)
 	return node;
 }
 
-template <class T_kenew_node, class T_val>
-void Map<T_kenew_node, T_val>::transplant(Node* old_node, Node* new_node)
+template <class T_key, class T_val>
+void Map<T_key, T_val>::transplant(Node* old_node, Node* new_node)
 {
 	if (old_node->p == nil) root = new_node;
 	else if (old_node == old_node->p->left) old_node->p->left = new_node;
@@ -160,8 +160,8 @@ void Map<T_kenew_node, T_val>::transplant(Node* old_node, Node* new_node)
 	new_node->p = old_node->p;
 }
 
-template <class T_kenode_sibling, class T_val>
-void Map<T_kenode_sibling, T_val>::remove_fixup(Node* node)
+template <class T_key, class T_val>
+void Map<T_key, T_val>::remove_fixup(Node* node)
 {
 	while (node != root && node->col == BLACK)
 	{
