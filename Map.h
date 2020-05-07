@@ -20,21 +20,21 @@ class Map {
 	Node* root;
 	inline static size_t size = 0;
 	inline static Node* nil = new Node(BLACK);
-	void left_rotate(Node* z);
-	void right_rotate(Node* x);
-	void insert_fixup(Node* z);
-	auto minimum(Node* x);
-	void transplant(Node* x, Node* y);
-	void remove_fixup(Node* x);
-	void clear_subtree(Node* x);
-	void get_keys_subtree(Node* x, std::vector<T_key>& v);
-	void get_values_subtree(Node* x, std::vector<T_val>& v);
-	void print_subtree(Node* x);
+	void left_rotate(Node*);
+	void right_rotate(Node*);
+	void insert_fixup(Node*);
+	auto minimum(Node*);
+	void transplant(Node*, Node*);
+	void remove_fixup(Node*);
+	void clear_subtree(Node*);
+	void get_keys_subtree(Node*, std::vector<T_key>&);
+	void get_values_subtree(Node*, std::vector<T_val>&);
+	void print_subtree(Node*);
 public:
 	Map() : root{ nil } {}
-	void insert(T_key key, T_val val);
-	void remove(T_key key);
-	T_val find(T_key key, T_val nil_val);
+	void insert(T_key, T_val);
+	void remove(T_key);
+	T_val find(T_key, T_val);
 	void clear();
 	std::vector<T_key> get_keys();
 	std::vector<T_val> get_values();
@@ -42,78 +42,78 @@ public:
 };
 
 template <class T_key, class T_val>
-void Map<T_key, T_val>::left_rotate(Node* x)
+void Map<T_key, T_val>::left_rotate(Node* node)
 {
-	Node* y = x->right;
-	x->right = y->left;
-	if (y->left != nil) y->left->p = x;
-	y->p = x->p;
-	if (x->p == nil) root = y;
-	else if (x == x->p->left) x->p->left = y;
-	else x->p->right = y;
-	y->left = x;
-	x->p = y;
+	Node* node_right = node->right;
+	node->right = node_right->left;
+	if (node_right->left != nil) node_right->left->p = node;
+	node_right->p = node->p;
+	if (node->p == nil) root = node_right;
+	else if (node == node->p->left) node->p->left = node_right;
+	else node->p->right = node_right;
+	node_right->left = node;
+	node->p = node_right;
+}
+
+template <class T_kenode_left, class T_val>
+void Map<T_kenode_left, T_val>::right_rotate(Node * node)
+{
+	Node* node_left = node->left;
+	node->left = node_left->right;
+	if (node_left->right != nil) node_left->right->p = node;
+	node_left->p = node->p;
+	if (node->p == nil) root = node_left;
+	else if (node == node->p->left) node->p->left = node_left;
+	else node->p->right = node_left;
+	node_left->right = node;
+	node->p = node_left;
 }
 
 template <class T_key, class T_val>
-void Map<T_key, T_val>::right_rotate(Node * x)
+void Map<T_key, T_val>::insert_fixup(Node * node)
 {
-	Node* y = x->left;
-	x->left = y->right;
-	if (y->right != nil) y->right->p = x;
-	y->p = x->p;
-	if (x->p == nil) root = y;
-	else if (x == x->p->left) x->p->left = y;
-	else x->p->right = y;
-	y->right = x;
-	x->p = y;
-}
-
-template <class T_key, class T_val>
-void Map<T_key, T_val>::insert_fixup(Node * z)
-{
-	Node* y;
-	while (z->p->col == RED)
+	Node* node_uncle;
+	while (node->p->col == RED)
 	{
-		if (z->p == z->p->p->left)
+		if (node->p == node->p->p->left)
 		{
-			y = z->p->p->right;
-			if (y->col == RED)
+			node_uncle = node->p->p->right;
+			if (node_uncle->col == RED)
 			{
-				z->p->col = BLACK;
-				y->col = BLACK;
-				z->p->p->col = RED;
-				z = z->p->p;
+				node->p->col = BLACK;
+				node_uncle->col = BLACK;
+				node->p->p->col = RED;
+				node = node->p->p;
 			}
 			else {
-				if (z == z->p->right) {
-					z = z->p;
-					left_rotate(z);
+				if (node == node->p->right) {
+					node = node->p;
+					left_rotate(node);
 				}
-				z->p->col = BLACK;
-				z->p->p->col = RED;
-				right_rotate(z->p->p);
+				node->p->col = BLACK;
+				node->p->p->col = RED;
+				right_rotate(node->p->p);
 			}
 		}
 		else
 		{
-			y = z->p->p->left;
-			if (y->col == RED)
+			node_uncle = node->p->p->left;
+			if (node_uncle->col == RED)
 			{
-				z->p->col = BLACK;
-				y->col = BLACK;
-				z->p->p->col = RED;
-				z = z->p->p;
+				node->p->col = BLACK;
+				node_uncle->col = BLACK;
+				node->p->p->col = RED;
+				node = node->p->p;
 			}
 			else
 			{
-				if (z == z->p->left) {
-					z = z->p;
-					right_rotate(z);
+				if (node == node->p->left) {
+					node = node->p;
+					right_rotate(node);
 				}
-				z->p->col = BLACK;
-				z->p->p->col = RED;
-				left_rotate(z->p->p);
+				node->p->col = BLACK;
+				node->p->p->col = RED;
+				left_rotate(node->p->p);
 			}
 		}
 	}
@@ -123,181 +123,182 @@ void Map<T_key, T_val>::insert_fixup(Node * z)
 template <class T_key, class T_val>
 void Map<T_key, T_val>::insert(T_key key, T_val val)
 {
-	Node* y = nil;
-	Node* x = root;
-	while (x != nil && x->key != key)
+	Node* cur_node_p = nil;
+	Node* cur_node = root;
+	while (cur_node != nil && cur_node->key != key)
 	{
-		y = x;
-		if (key < x->key) x = x->left;
-		else x = x->right;
+		cur_node_p = cur_node;
+		if (key < cur_node->key) cur_node = cur_node->left;
+		else cur_node = cur_node->right;
 	}
-	if (x == nil)
+	if (cur_node == nil)
 	{
-		Node* z = new Node(key, val);
-		z->p = y;
-		if (y == nil) root = z;
-		else if (z->key < y->key) y->left = z;
-		else y->right = z;
-		insert_fixup(z);
+		Node* insert_node = new Node(key, val);
+		insert_node->p = cur_node_p;
+		if (cur_node_p == nil) root = insert_node;
+		else if (insert_node->key < cur_node_p->key) cur_node_p->left = insert_node;
+		else cur_node_p->right = insert_node;
+		insert_finodeup(insert_node);
 		++size;
 	}
-	else x->value = val;
+	else cur_node->value = val;
 }
 
 template <class T_key, class T_val>
-auto Map<T_key, T_val>::minimum(Node* x)
+auto Map<T_key, T_val>::minimum(Node* node)
 {
-	while (x->left != nil) x = x->left;
-	return x;
+	while (node->left != nil) node = node->left;
+	return node;
 }
 
-template <class T_key, class T_val>
-void Map<T_key, T_val>::transplant(Node* x, Node* y)
+template <class T_kenew_node, class T_val>
+void Map<T_kenew_node, T_val>::transplant(Node* old_node, Node* new_node)
 {
-	if (x->p == nil) root = y;
-	else if (x == x->p->left) x->p->left = y;
-	else x->p->right = y;
-	y->p = x->p;
+	if (old_node->p == nil) root = new_node;
+	else if (old_node == old_node->p->left) old_node->p->left = new_node;
+	else old_node->p->right = new_node;
+	new_node->p = old_node->p;
 }
 
-template <class T_key, class T_val>
-void Map<T_key, T_val>::remove_fixup(Node* x)
+template <class T_kenode_sibling, class T_val>
+void Map<T_kenode_sibling, T_val>::remove_fixup(Node* node)
 {
-	while (x != root && x->col == BLACK)
+	while (node != root && node->col == BLACK)
 	{
-		if (x == x->p->left)
+		if (node == node->p->left)
 		{
-			Node* y = x->p->right;
-			if (y->col == RED)
+			Node* node_sibling = node->p->right;
+			if (node_sibling->col == RED)
 			{
-				y->col = BLACK;
-				x->p->col = RED;
-				left_rotate(x->p);
-				y = x->p->right;
+				node_sibling->col = BLACK;
+				node->p->col = RED;
+				left_rotate(node->p);
+				node_sibling = node->p->right;
 			}
-			if (y->left->col == BLACK && y->right->col == BLACK)
+			if (node_sibling->left->col == BLACK && node_sibling->right->col == BLACK)
 			{
-				y->col = RED;
-				x = x->p;
+				node_sibling->col = RED;
+				node = node->p;
 			}
 			else
 			{
-				if (y->right->col == BLACK)
+				if (node_sibling->right->col == BLACK)
 				{
-					y->left->col = BLACK;
-					y->col = RED;
-					right_rotate(y);
-					y = x->p->right;
+					node_sibling->left->col = BLACK;
+					node_sibling->col = RED;
+					right_rotate(node_sibling);
+					node_sibling = node->p->right;
 				}
-				y->col = x->p->col;
-				x->p->col = BLACK;
-				y->right->col = BLACK;
-				left_rotate(x->p);
-				x = root;
+				node_sibling->col = node->p->col;
+				node->p->col = BLACK;
+				node_sibling->right->col = BLACK;
+				left_rotate(node->p);
+				node = root;
 			}
 		}
 		else
 		{
-			Node* y = x->p->left;
-			if (y->col == RED)
+			Node* node_sibling = node->p->left;
+			if (node_sibling->col == RED)
 			{
-				y->col = BLACK;
-				x->p->col = RED;
-				right_rotate(x->p);
-				y = x->p->left;
+				node_sibling->col = BLACK;
+				node->p->col = RED;
+				right_rotate(node->p);
+				node_sibling = node->p->left;
 			}
-			if (y->right->col == BLACK && y->left->col == BLACK)
+			if (node_sibling->right->col == BLACK && node_sibling->left->col == BLACK)
 			{
-				y->col = RED;
-				x = x->p;
+				node_sibling->col = RED;
+				node = node->p;
 			}
 			else
 			{
-				if (y->left->col == BLACK)
+				if (node_sibling->left->col == BLACK)
 				{
-					y->right->col = BLACK;
-					y->col = RED;
-					left_rotate(y);
-					y = x->p->left;
+					node_sibling->right->col = BLACK;
+					node_sibling->col = RED;
+					left_rotate(node_sibling);
+					node_sibling = node->p->left;
 				}
-				y->col = x->p->col;
-				x->p->col = BLACK;
-				y->left->col = BLACK;
-				right_rotate(x->p);
-				x = root;
+				node_sibling->col = node->p->col;
+				node->p->col = BLACK;
+				node_sibling->left->col = BLACK;
+				right_rotate(node->p);
+				node = root;
 			}
 		}
 	}
-	x->col = BLACK;
+	node->col = BLACK;
 }
 
 template <class T_key, class T_val>
 void Map<T_key, T_val>::remove(T_key key)
 {
-	Node* z = root;
-	while (z != nil && z->key != key)
+	Node* remove_node = root;
+	while (remove_node != nil && remove_node->key != key)
 	{
-		if (key < z->key) z = z->left;
-		else z = z->right;
+		if (key < remove_node->key) remove_node = remove_node->left;
+		else remove_node = remove_node->right;
 	}
-	if (z == nil) throw std::out_of_range{ "remove element out of range" };
-	Node * y = z;
-	Node * x;
-	color y_orig_color = y->col;
-	if (z->left == nil)
+	if (remove_node == nil) throw std::out_of_range{ "remove element out of range" };
+	Node * fixup_node;
+	/*тут будем хранить цвет либо удаяемого узла,
+	либо узла следуюшего за удаляемым в порядке центрированного обхода*/
+	color help_node_orig_color = remove_node->col;
+	if (remove_node->left == nil)
 	{
-		x = z->right;
-		transplant(z, z->right);
+		fixup_node = remove_node->right;
+		transplant(remove_node, remove_node->right);
 	}
-	else if (z->right == nil)
+	else if (remove_node->right == nil)
 	{
-		x = z->left;
-		transplant(z, z->left);
+		fixup_node = remove_node->left;
+		transplant(remove_node, remove_node->left);
 	}
 	else
 	{
-		y = minimum(z->right);
-		y_orig_color = y->col;
-		x = y->right;
-		if (y->p == z)
+		Node* inorder_next = minimum(remove_node->right);
+		help_node_orig_color = inorder_next->col;
+		fixup_node = inorder_next->right;
+		if (inorder_next->p == remove_node)
 		{
-			x->p = y;
+			fixup_node->p = inorder_next;
 		}
 		else
 		{
-			transplant(y, y->right);
-			y->right = z->right;
-			y->right->p = y;
+			transplant(inorder_next, inorder_next->right);
+			inorder_next->right = remove_node->right;
+			inorder_next->right->p = inorder_next;
 		}
-		transplant(z, y);
-		y->left = z->left;
-		y->left->p = y;
-		y->col = z->col;
+		transplant(remove_node, inorder_next);
+		inorder_next->left = remove_node->left;
+		inorder_next->left->p = inorder_next;
+		inorder_next->col = remove_node->col;
 	}
-	if (y_orig_color == BLACK) remove_fixup(x);
+	if (help_node_orig_color == BLACK) remove_fixup(fixup_node);
 }
 
 template <class T_key, class T_val>
 T_val Map<T_key, T_val>::find(T_key key, T_val nil_value)
 {
-	Node* x = root;
-	while (x != nil)
+	Node* node = root;
+	while (node != nil)
 	{
-		if (key == x->key) return x->value;
-		else if (key < x->key) x = x->left;
-		else x = x->right;
+		if (key == node->key) return node->value;
+		else if (key < node->key) node = node->left;
+		else node = node->right;
 	}
 	return nil_value;
 }
 
 template <class T_key, class T_val>
-void Map<T_key, T_val>::clear_subtree(Node* x)
+void Map<T_key, T_val>::clear_subtree(Node* node)
 {
-	if (x != nil)
+	if (node != nil)
 	{
-		clear_subtree(x->left);
-		clear_subtree(x->right);
-		delete x;
+		clear_subtree(node->left);
+		clear_subtree(node->right);
+		delete node;
 	}
 }
 
@@ -309,13 +310,13 @@ void Map<T_key, T_val>::clear()
 }
 
 template <class T_key, class T_val>
-void Map<T_key, T_val>::get_keys_subtree(Node* x, std::vector<T_key>& v)
+void Map<T_key, T_val>::get_keys_subtree(Node* node, std::vector<T_key>& v)
 {
-	if (x != nil)
+	if (node != nil)
 	{
-		get_keys_subtree(x->left, v);
-		v.push_back(x->key);
-		get_keys_subtree(x->right, v);
+		get_keys_subtree(node->left, v);
+		v.push_back(node->key);
+		get_keys_subtree(node->right, v);
 	}
 }
 
@@ -328,13 +329,13 @@ std::vector<T_key> Map<T_key, T_val>::get_keys()
 }
 
 template <class T_key, class T_val>
-void Map<T_key, T_val>::get_values_subtree(Node* x, std::vector<T_val>& v)
+void Map<T_key, T_val>::get_values_subtree(Node* node, std::vector<T_val>& v)
 {
-	if (x != nil)
+	if (node != nil)
 	{
-		get_values_subtree(x->left, v);
-		v.push_back(x->value);
-		get_values_subtree(x->right, v);
+		get_values_subtree(node->left, v);
+		v.push_back(node->value);
+		get_values_subtree(node->right, v);
 	}
 }
 
@@ -347,13 +348,13 @@ std::vector<T_val> Map<T_key, T_val>::get_values()
 }
 
 template <class T_key, class T_val>
-void Map<T_key, T_val>::print_subtree(Node * x)
+void Map<T_key, T_val>::print_subtree(Node * node)
 {
-	if (x != nil)
+	if (node != nil)
 	{
-		print_subtree(x->left);
-		std::cout << "(key: " << x->key << ", value: " << x->value << ")" << std::endl;
-		print_subtree(x->right);
+		print_subtree(node->left);
+		std::cout << "(key: " << node->key << ", value: " << node->value << ")" << std::endl;
+		print_subtree(node->right);
 	}
 }
 
